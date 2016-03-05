@@ -1,6 +1,5 @@
 package io.alstonlin.quickvid;
 
-import android.content.Context;
 import android.hardware.Camera;
 import android.media.CamcorderProfile;
 import android.media.MediaRecorder;
@@ -82,27 +81,25 @@ public class CameraFragment extends Fragment implements SurfaceHolder.Callback {
      */
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        // Sets up the recorder
-        recorder = new MediaRecorder();
-        initRecorder();
         // Inflates the view
         View v = inflater.inflate(R.layout.fragment_camera, container, false);
         SurfaceView cameraView = (SurfaceView) v.findViewById(R.id.surface_camera);
         holder = cameraView.getHolder();
         holder.addCallback(this);
         holder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+        // Sets up the recorder
+        recorder = new MediaRecorder();
         // Sets up the FAB
         FloatingActionButton captureButton = (FloatingActionButton) v.findViewById(R.id.capture);
         captureButton.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    initRecorder();
                     recorder.start();
                     return true;
-                } else if (event.getAction() == MotionEvent.ACTION_BUTTON_RELEASE) {
+                } else if (event.getAction() == MotionEvent.ACTION_UP || event.getAction() == MotionEvent.ACTION_CANCEL) {
                     recorder.stop();
-                    initRecorder();
-                    prepareRecorder();
                     return true;
                 }
                 return false;
@@ -121,6 +118,7 @@ public class CameraFragment extends Fragment implements SurfaceHolder.Callback {
         recorder.setAudioSource(MediaRecorder.AudioSource.DEFAULT);
         recorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
         recorder.setProfile(CamcorderProfile.get(CamcorderProfile.QUALITY_480P));
+        recorder.setMaxDuration(MAX_DURATION);
         recorder.setOutputFile(activity.getFilesDir() + VIDEO_FILE_NAME);
         prepareRecorder();
     }
@@ -148,6 +146,18 @@ public class CameraFragment extends Fragment implements SurfaceHolder.Callback {
      */
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
+        Camera camera = getCameraInstance();
+        if (camera != null) {
+            Camera.Parameters params = camera.getParameters();
+            camera.setParameters(params);
+            try {
+                //mCamera.setDisplayOrientation(90);
+                camera.setPreviewDisplay(holder);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            camera.startPreview();
+        }
     }
 
     /**
