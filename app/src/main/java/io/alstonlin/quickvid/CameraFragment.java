@@ -22,14 +22,15 @@ import java.util.logging.Logger;
  */
 public class CameraFragment extends Fragment implements SurfaceHolder.Callback {
 
+    public static final String VIDEO_FILE_NAME = "temp.mp4";
     private static final String ARG_ACTIVITY = "activity";
     private static final int MAX_DURATION = 30000;
-    private static final String VIDEO_FILE_NAME = "temp.mp4";
 
     private static Camera camera;
     private SurfaceHolder holder;
     private MediaRecorder recorder;
     private MainActivity activity;
+    private boolean recording = false;
 
     /**
      * Factory method; use this instead of constructor to instantiate the Fragment.
@@ -97,9 +98,12 @@ public class CameraFragment extends Fragment implements SurfaceHolder.Callback {
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
                     initRecorder();
                     recorder.start();
+                    recording = true;
                     return true;
                 } else if (event.getAction() == MotionEvent.ACTION_UP || event.getAction() == MotionEvent.ACTION_CANCEL) {
                     recorder.stop();
+                    recording = false;
+                    DAO.uploadVideo(activity);
                     return true;
                 }
                 return false;
@@ -151,7 +155,6 @@ public class CameraFragment extends Fragment implements SurfaceHolder.Callback {
             Camera.Parameters params = camera.getParameters();
             camera.setParameters(params);
             try {
-                //mCamera.setDisplayOrientation(90);
                 camera.setPreviewDisplay(holder);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -166,7 +169,9 @@ public class CameraFragment extends Fragment implements SurfaceHolder.Callback {
      */
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
-        recorder.stop();
+        if (recording) {
+            recorder.stop();
+        }
         recorder.release();
     }
 }
