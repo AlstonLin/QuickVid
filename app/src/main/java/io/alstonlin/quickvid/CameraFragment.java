@@ -24,7 +24,7 @@ public class CameraFragment extends Fragment implements SurfaceHolder.Callback {
 
     public static final String VIDEO_FILE_NAME = "temp.mp4";
     private static final String ARG_ACTIVITY = "activity";
-    private static final int MAX_DURATION = 30000;
+    private static final int MAX_FILE_SIZE = 1000000; // 1MB Max
 
     private static Camera camera;
     private SurfaceHolder holder;
@@ -38,9 +38,6 @@ public class CameraFragment extends Fragment implements SurfaceHolder.Callback {
      */
     public static CameraFragment newInstance(MainActivity activity) {
         CameraFragment fragment = new CameraFragment();
-        Bundle args = new Bundle();
-        args.putSerializable(ARG_ACTIVITY, activity);
-        fragment.setArguments(args);
         fragment.activity = activity;
         return fragment;
     }
@@ -103,7 +100,7 @@ public class CameraFragment extends Fragment implements SurfaceHolder.Callback {
                 } else if (event.getAction() == MotionEvent.ACTION_UP || event.getAction() == MotionEvent.ACTION_CANCEL) {
                     recorder.stop();
                     recording = false;
-                    DAO.uploadVideo(activity);
+                    DAO.getInstance().uploadVideo(activity);
                     return true;
                 }
                 return false;
@@ -121,8 +118,15 @@ public class CameraFragment extends Fragment implements SurfaceHolder.Callback {
         recorder.setCamera(camera);
         recorder.setAudioSource(MediaRecorder.AudioSource.DEFAULT);
         recorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
-        recorder.setProfile(CamcorderProfile.get(CamcorderProfile.QUALITY_480P));
-        recorder.setMaxDuration(MAX_DURATION);
+        recorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
+
+        recorder.setAudioEncodingBitRate(83304);
+        recorder.setVideoSize(640, 480);
+        recorder.setVideoFrameRate(18);
+        recorder.setVideoEncodingBitRate(8000000);
+        recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
+        recorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264);
+
         recorder.setOutputFile(activity.getFilesDir() + VIDEO_FILE_NAME);
         prepareRecorder();
     }

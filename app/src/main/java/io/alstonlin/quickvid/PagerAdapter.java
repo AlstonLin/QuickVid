@@ -21,9 +21,9 @@ public class PagerAdapter extends FragmentStatePagerAdapter {
     public Fragment getItem(int position) {
         switch (position) {
             case 0:
-                return CameraFragment.newInstance(activity);
-            case 1:
                 return ExploreFragment.newInstance(activity);
+            case 1:
+                return CameraFragment.newInstance(activity);
             default:
                 return null;
         }
