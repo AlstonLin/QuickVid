@@ -5,6 +5,9 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
+
 import com.lorentzos.flingswipe.SwipeFlingAdapterView;
 
 import java.util.ArrayList;
@@ -49,7 +52,13 @@ public class ExploreFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_explore, container, false);
         SwipeFlingAdapterView flingContainer = (SwipeFlingAdapterView) v.findViewById(R.id.fling_view);
-
+        // Sets up Overlay
+        final ImageView likeOverlay = new ImageView(activity);
+        final ImageView passOverlay = new ImageView(activity);
+        likeOverlay.setImageResource(R.drawable.plus_one);
+        passOverlay.setImageResource(R.drawable.pass);
+        final FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT);
+        // Sets up Fling Adapter
         final FlingAdapter adapter = new FlingAdapter(activity, new ArrayList<VideoItem>());
         flingContainer.setAdapter(adapter);
         flingContainer.setFlingListener(new SwipeFlingAdapterView.onFlingListener() {
@@ -61,10 +70,18 @@ public class ExploreFragment extends Fragment {
 
             @Override
             public void onLeftCardExit(Object dataObject) {
+                DAO.getInstance().passItem((VideoItem) dataObject);
+                FrameLayout frame = (FrameLayout) activity.findViewById(R.id.container);
+                if (likeOverlay.getParent() != null) frame.removeView(likeOverlay);
+                if (passOverlay.getParent() != null) frame.removeView(passOverlay);
             }
 
             @Override
             public void onRightCardExit(Object dataObject) {
+                DAO.getInstance().likeItem((VideoItem) dataObject);
+                FrameLayout frame = (FrameLayout) activity.findViewById(R.id.container);
+                if (likeOverlay.getParent() != null) frame.removeView(likeOverlay);
+                if (passOverlay.getParent() != null) frame.removeView(passOverlay);
             }
 
             @Override
@@ -76,6 +93,21 @@ public class ExploreFragment extends Fragment {
 
             @Override
             public void onScroll(float v) {
+                FrameLayout frame = (FrameLayout) activity.findViewById(R.id.container);
+                if (v > 0.5){
+                    if (passOverlay.getParent() != null) frame.removeView(passOverlay);
+                    if (likeOverlay.getParent() == null) frame.addView(likeOverlay, params);
+                    float alpha = v / 1.5f;
+                    likeOverlay.setAlpha(alpha > 1 ? 1 : alpha);
+                } else if (v < -0.5){
+                    if (likeOverlay.getParent() != null) frame.removeView(likeOverlay);
+                    if (passOverlay.getParent() == null) frame.addView(passOverlay, params);
+                    float alpha = v / 1.5f;
+                    passOverlay.setAlpha(alpha < -1 ? 1 : -alpha);
+                } else{
+                    if (likeOverlay.getParent() != null) frame.removeView(likeOverlay);
+                    if (passOverlay.getParent() != null) frame.removeView(passOverlay);
+                }
             }
         });
         DAO.getInstance().getVideoItems(adapter, null, null);

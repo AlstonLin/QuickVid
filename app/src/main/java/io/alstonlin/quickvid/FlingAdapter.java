@@ -7,6 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.TextView;
 
 import com.devbrackets.android.exomedia.EMVideoView;
 
@@ -63,6 +64,9 @@ public class FlingAdapter extends BaseAdapter{
         if (position == 0){
             setupFirstItem((EMVideoView) convertView.findViewById(R.id.vidView));
         }
+        TextView likes = (TextView) convertView.findViewById(R.id.likes);
+        likes.setText("x" + Integer.toString(items.get(position).getLikes()) + " of " +
+                Integer.toString(items.get(position).getLikes() + items.get(position).getPasses()));
         return convertView;
     }
 

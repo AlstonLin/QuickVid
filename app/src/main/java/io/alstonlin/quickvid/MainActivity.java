@@ -2,6 +2,7 @@ package io.alstonlin.quickvid;
 
 import android.os.Bundle;
 import android.support.design.widget.TabLayout;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 
@@ -25,8 +26,8 @@ public class MainActivity extends AppCompatActivity {
      */
     private void setupTabs(){
         tabLayout = (TabLayout) findViewById(R.id.tab_layout);
-        tabLayout.addTab(tabLayout.newTab().setText("Explore"));
-        tabLayout.addTab(tabLayout.newTab().setText("Camera"));
+        tabLayout.addTab(tabLayout.newTab().setIcon(ContextCompat.getDrawable(this, R.drawable.explore)));
+        tabLayout.addTab(tabLayout.newTab().setIcon(ContextCompat.getDrawable(this, R.drawable.camera)));
         tabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
     }
 

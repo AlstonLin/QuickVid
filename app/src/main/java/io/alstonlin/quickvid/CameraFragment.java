@@ -1,7 +1,7 @@
 package io.alstonlin.quickvid;
 
+import android.graphics.drawable.Icon;
 import android.hardware.Camera;
-import android.media.CamcorderProfile;
 import android.media.MediaRecorder;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -12,6 +12,8 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
 
 import java.io.IOException;
 import java.util.logging.Level;
@@ -87,20 +89,35 @@ public class CameraFragment extends Fragment implements SurfaceHolder.Callback {
         holder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
         // Sets up the recorder
         recorder = new MediaRecorder();
+        // Sets up Overlay
+        final ImageView overlay = new ImageView(activity);
+        overlay.setImageResource(R.drawable.overlay);
+        final FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT);
         // Sets up the FAB
         FloatingActionButton captureButton = (FloatingActionButton) v.findViewById(R.id.capture);
         captureButton.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
+                FrameLayout frame = (FrameLayout)activity.findViewById(R.id.frame);
                 if (event.getAction() == MotionEvent.ACTION_DOWN) {
                     initRecorder();
                     recorder.start();
                     recording = true;
+                    // Changes Fab
+                    FloatingActionButton fab = (FloatingActionButton) activity.findViewById(R.id.capture);
+                    fab.setImageDrawable(activity.getResources().getDrawable(R.drawable.recording));
+                    // Adds Overlay
+                    frame.addView(overlay, params);
                     return true;
                 } else if (event.getAction() == MotionEvent.ACTION_UP || event.getAction() == MotionEvent.ACTION_CANCEL) {
                     recorder.stop();
                     recording = false;
                     DAO.getInstance().uploadVideo(activity);
+                    // Changes FAB
+                    FloatingActionButton fab = (FloatingActionButton) activity.findViewById(R.id.capture);
+                    fab.setImageDrawable(activity.getResources().getDrawable(R.drawable.record));
+                    // Removes Overlay
+                    frame.removeView(overlay);
                     return true;
                 }
                 return false;

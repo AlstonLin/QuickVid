@@ -32,6 +32,8 @@ public class DAO {
     public static final String BASE_URL = "http://159.203.23.36:8080";
     public static final String UPLOAD_ENDPOINT = "/upload";
     public static final String DOWNLOAD_ENDPOINT = "/download";
+    public static final String LIKE_ENDPOINT = "/like/";
+    public static final String PASS_ENDPOINT = "/pass/";
     public static final int URLS_PER_DOWNLOAD = 3;
     public static DAO instance;
 
@@ -66,6 +68,24 @@ public class DAO {
     public void getVideoItems(FlingAdapter adapter, String belowId, String aboveId){
         GetVideoItemsTask task = new GetVideoItemsTask(adapter);
         task.execute(aboveId, belowId);
+    }
+
+    /**
+     * Likes a given VideoItem;
+     * @param item The VideoItem to like
+     */
+    public void likeItem(VideoItem item){
+        LikeItemTask task = new LikeItemTask();
+        task.execute(item);
+    }
+
+    /**
+     * Passes a given VideoItem;
+     * @param item The VideoItem to pass
+     */
+    public void passItem(VideoItem item){
+        PassItemTask task = new PassItemTask();
+        task.execute(item);
     }
 
     private class UploadVideoTask extends AsyncTask<String, Void, Void> {
@@ -121,7 +141,9 @@ public class DAO {
                 for (int i = 0; i < a.length(); i++) {
                     String url = BASE_URL + "/" + a.getJSONObject(i).getString("url");
                     String id = a.getJSONObject(i).getString("_id");
-                    items.add(new VideoItem(url, id));
+                    int likes = a.getJSONObject(i).getInt("likes");
+                    int passes = a.getJSONObject(i).getInt("passes");
+                    items.add(new VideoItem(url, id, likes, passes));
                 }
             } catch(IOException | JSONException e){
                 e.printStackTrace();
@@ -137,4 +159,33 @@ public class DAO {
         }
     }
 
+    private class LikeItemTask extends AsyncTask<VideoItem, Void, Void> {
+        @Override
+        protected Void doInBackground(VideoItem... params) {
+            VideoItem item = params[0];
+            HttpClient client = new DefaultHttpClient();
+            HttpPost post = new HttpPost(BASE_URL + LIKE_ENDPOINT + item.getId());
+            try{
+                client.execute(post);
+            } catch (IOException e){
+                e.printStackTrace();
+            }
+            return null;
+        }
+    }
+
+    private class PassItemTask extends AsyncTask<VideoItem, Void, Void> {
+        @Override
+        protected Void doInBackground(VideoItem... params) {
+            VideoItem item = params[0];
+            HttpClient client = new DefaultHttpClient();
+            HttpPost post = new HttpPost(BASE_URL + PASS_ENDPOINT + item.getId());
+            try{
+                client.execute(post);
+            } catch (IOException e){
+                e.printStackTrace();
+            }
+            return null;
+        }
+    }
 }
